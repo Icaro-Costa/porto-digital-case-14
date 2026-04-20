@@ -1,0 +1,12 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Smooth scroll padding for fixed header */
+html {
+  scroll-padding-top: 5rem;
+}
