@@ -7,8 +7,7 @@ const nextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: false },
+typescript: { ignoreBuildErrors: false },
 };
 
 export default nextConfig;
