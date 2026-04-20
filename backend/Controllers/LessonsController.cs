@@ -15,8 +15,8 @@ namespace NeuroMentor.Api.Controllers;
 [Authorize]
 public class LessonsController(AppDbContext db, ClaudeService claude, TextExtractionService extractor) : ControllerBase
 {
-    private static readonly string ModuleSystemPrompt =
-        "Você é um especialista em pedagogia e design instrucional. Analise o material fornecido e extraia módulos de aprendizagem estruturados baseados na Taxonomia de Bloom.";
+    private static readonly string ModuleSystemPrompt = NeuroPersona.InstructionalDesigner;
+    private bool HasAiAccess => User.FindFirstValue("isAiEnabled") == "True";
 
     [HttpPost("upload")]
     [RequestSizeLimit(50 * 1024 * 1024)]
@@ -49,6 +49,7 @@ public class LessonsController(AppDbContext db, ClaudeService claude, TextExtrac
     [HttpPost("generate")]
     public async Task<IActionResult> Generate(GenerateModulesRequest req)
     {
+        if (!HasAiAccess) return Forbid();
         var lesson = await db.Lessons.Include(l => l.Modules).FirstOrDefaultAsync(l => l.Id == req.LessonId);
         if (lesson is null) return NotFound(new { error = "Aula não encontrada." });
 

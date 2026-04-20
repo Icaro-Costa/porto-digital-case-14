@@ -79,6 +79,8 @@ export interface AuthResponse {
   photoUrl?: string;
   matricula?: string;
   subject?: string;
+  isAiEnabled: boolean;
+  isAdmin: boolean;
 }
 
 export const api = {
@@ -242,6 +244,29 @@ export const api = {
       topics: Array<{ title: string; explanation: string; tips: string[] }>;
       summary: string;
     }>("/api/review/generate", { method: "POST", body: JSON.stringify(body) });
+  },
+
+  // ── Admin ────────────────────────────────────────────────────────────────
+  getAdminUsers(search?: string) {
+    const q = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<Array<{
+      id: string; name: string; email: string; role: string;
+      photoUrl?: string; isAiEnabled: boolean; isAdmin: boolean; createdAt: string;
+    }>>(`/api/admin/users${q}`);
+  },
+
+  setAiAccess(userId: string, enabled: boolean) {
+    return request<{ id: string; isAiEnabled: boolean }>(
+      `/api/admin/users/${userId}/ai-access`,
+      { method: "PUT", body: JSON.stringify({ enabled }) }
+    );
+  },
+
+  setAdminRole(userId: string, enabled: boolean) {
+    return request<{ id: string; isAdmin: boolean }>(
+      `/api/admin/users/${userId}/admin`,
+      { method: "PUT", body: JSON.stringify({ enabled }) }
+    );
   },
 
   // ── Classes ──────────────────────────────────────────────────────────────

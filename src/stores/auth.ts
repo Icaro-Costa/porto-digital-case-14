@@ -12,6 +12,8 @@ export interface User {
   photo?: string;
   matricula?: string;
   subject?: string;
+  isAiEnabled: boolean;
+  isAdmin: boolean;
 }
 
 function mapAuthResponse(res: AuthResponse): User {
@@ -23,6 +25,8 @@ function mapAuthResponse(res: AuthResponse): User {
     photo: res.photoUrl,
     matricula: res.matricula,
     subject: res.subject,
+    isAiEnabled: res.isAiEnabled ?? false,
+    isAdmin: res.isAdmin ?? false,
   };
 }
 

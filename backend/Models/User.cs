@@ -12,6 +12,8 @@ public class User
     public string? PhotoUrl { get; set; }
     public string? Matricula { get; set; }
     public string? Subject { get; set; }
+    public bool IsAiEnabled { get; set; } = false;
+    public bool IsAdmin { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Lesson> Lessons { get; set; } = [];

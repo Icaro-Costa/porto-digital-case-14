@@ -100,6 +100,8 @@ public class AuthController(AppDbContext db, JwtService jwt) : ControllerBase
         Role: user.Role.ToString().ToLower(),
         PhotoUrl: user.PhotoUrl,
         Matricula: user.Matricula,
-        Subject: user.Subject
+        Subject: user.Subject,
+        IsAiEnabled: user.IsAiEnabled,
+        IsAdmin: user.IsAdmin
     );
 }

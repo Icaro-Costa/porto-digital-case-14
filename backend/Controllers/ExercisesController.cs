@@ -15,9 +15,12 @@ namespace NeuroMentor.Api.Controllers;
 [Authorize]
 public class ExercisesController(AppDbContext db, ClaudeService claude) : ControllerBase
 {
+    private bool HasAiAccess => User.FindFirstValue("isAiEnabled") == "True";
+
     [HttpPost("generate")]
     public async Task<IActionResult> Generate(GenerateExercisesRequest req)
     {
+        if (!HasAiAccess) return Forbid();
         var lesson = req.LessonId.HasValue ? await db.Lessons.FindAsync(req.LessonId.Value) : null;
         var material = req.Context ?? lesson?.RawText ?? "";
 
@@ -49,7 +52,7 @@ public class ExercisesController(AppDbContext db, ClaudeService claude) : Contro
             Varie entre questões de múltipla escolha (type: multiple_choice) e dissertativas (type: open).
             """;
 
-        var raw = await claude.CompleteAsync("Você é um professor especialista em criar avaliações pedagógicas.", prompt, 1500);
+        var raw = await claude.CompleteAsync(NeuroPersona.ExerciseGenerator, prompt, 1500);
         var start = raw.IndexOf('{'); var end = raw.LastIndexOf('}');
         if (start == -1 || end == -1) return StatusCode(500, new { error = "Resposta inválida da IA." });
 
@@ -59,6 +62,7 @@ public class ExercisesController(AppDbContext db, ClaudeService claude) : Contro
     [HttpPost("correct")]
     public async Task<IActionResult> Correct(CorrectExerciseRequest req)
     {
+        if (!HasAiAccess) return Forbid();
         var ctx = req.Context is not null ? $"\nContexto do material:\n{req.Context[..Math.Min(5000, req.Context.Length)]}" : "";
         var prompt = $$"""
             Avalie a resposta do aluno e retorne APENAS o JSON com três campos:
@@ -73,7 +77,7 @@ public class ExercisesController(AppDbContext db, ClaudeService claude) : Contro
             {{ctx}}
             """;
 
-        var raw = await claude.CompleteAsync("Você é um professor avaliador. Avalie com precisão e dê feedback construtivo.", prompt, 800);
+        var raw = await claude.CompleteAsync(NeuroPersona.Evaluator, prompt, 800);
         var start = raw.IndexOf('{'); var end = raw.LastIndexOf('}');
         if (start == -1 || end == -1) return StatusCode(500, new { error = "Resposta inválida da IA." });
 

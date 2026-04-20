@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NeuroMentor.Api.DTOs.Exercises;
+using System.Security.Claims;
 using NeuroMentor.Api.Services;
 
 namespace NeuroMentor.Api.Controllers;
@@ -12,17 +13,13 @@ namespace NeuroMentor.Api.Controllers;
 [Authorize]
 public class ChatController(ClaudeService claude) : ControllerBase
 {
-    private const string MentorSystem = """
-        Você é o NeuroMentor, um tutor de IA especializado em ensino adaptativo.
-        Use a Taxonomia de Bloom para guiar o aprendizado.
-        Responda sempre em português brasileiro de forma clara, encorajadora e didática.
-        Faça perguntas socráticas para estimular o pensamento crítico.
-        Quando o aluno errar, explique o conceito com exemplos concretos.
-        """;
+    private static readonly string MentorSystem = NeuroPersona.Mentor;
+    private bool HasAiAccess => User.FindFirstValue("isAiEnabled") == "True";
 
     [HttpPost("stream")]
     public async Task Stream([FromBody] ChatRequest req, CancellationToken ct)
     {
+        if (!HasAiAccess) { Response.StatusCode = 403; return; }
         Response.ContentType = "text/event-stream";
         Response.Headers["Cache-Control"] = "no-cache";
         Response.Headers["X-Accel-Buffering"] = "no";
@@ -47,6 +44,7 @@ public class ChatController(ClaudeService claude) : ControllerBase
     [HttpPost("exercises")]
     public async Task<IActionResult> GenerateExercises([FromBody] ChatRequest req)
     {
+        if (!HasAiAccess) return Forbid();
         var system = req.Context is not null
             ? $"{MentorSystem}\n\nMATERIAL:\n{req.Context[..Math.Min(15000, req.Context.Length)]}"
             : MentorSystem;

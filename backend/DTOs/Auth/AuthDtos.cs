@@ -13,5 +13,7 @@ public record AuthResponse(
     string Role,
     string? PhotoUrl,
     string? Matricula,
-    string? Subject
+    string? Subject,
+    bool IsAiEnabled,
+    bool IsAdmin
 );

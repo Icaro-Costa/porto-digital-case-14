@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NeuroMentor.Api.Data;
@@ -11,9 +12,12 @@ namespace NeuroMentor.Api.Controllers;
 [Authorize]
 public class ReviewController(AppDbContext db, ClaudeService claude) : ControllerBase
 {
+    private bool HasAiAccess => User.FindFirstValue("isAiEnabled") == "True";
+
     [HttpPost("generate")]
     public async Task<IActionResult> Generate(GenerateReviewRequest req)
     {
+        if (!HasAiAccess) return Forbid();
         var lesson = req.LessonId.HasValue ? await db.Lessons.FindAsync(req.LessonId.Value) : null;
         var material = req.Context ?? lesson?.RawText ?? "";
 
@@ -38,7 +42,7 @@ public class ReviewController(AppDbContext db, ClaudeService claude) : Controlle
             }
             """;
 
-        var raw = await claude.CompleteAsync("Você é um tutor pedagógico especializado em revisão personalizada.", prompt, 1500);
+        var raw = await claude.CompleteAsync(NeuroPersona.ReviewPlanner, prompt, 1500);
         var start = raw.IndexOf('{'); var end = raw.LastIndexOf('}');
         if (start == -1 || end == -1) return StatusCode(500, new { error = "Resposta inválida da IA." });
 

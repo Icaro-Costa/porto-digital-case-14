@@ -19,6 +19,8 @@ public class JwtService(IConfiguration config)
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim(ClaimTypes.Name, user.Name),
+            new Claim("isAiEnabled", user.IsAiEnabled.ToString()),
+            new Claim("isAdmin", user.IsAdmin.ToString()),
         };
 
         var token = new JwtSecurityToken(
