@@ -298,7 +298,6 @@ export function StudentChat() {
       addAttempt({
         lessonId: "chat", moduleId: "chat", question, answer,
         correct: result.correct, feedback: result.feedback,
-        createdAt: Date.now(),
       });
 
       api.recordAttempt({
