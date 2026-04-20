@@ -5,5 +5,5 @@ public record CorrectExerciseRequest(string Question, string Answer, string? Con
 public record RecordAttemptRequest(Guid? LessonId, string ModuleId, string Question, string Answer, bool IsCorrect, string Feedback, string? TeacherExplanation = null, bool PendingReview = false);
 public record ReviewAttemptRequest(string Status, string? Note = null);
 public record GenerateReviewRequest(Guid? LessonId, string? Context, List<string> WrongAnswers);
-public record ChatRequest(List<ChatMessage> Messages, string? Context);
+public record ChatRequest(List<ChatMessage> Messages, string? Context, Guid? ModuleId = null);
 public record ChatMessage(string Role, object Content);

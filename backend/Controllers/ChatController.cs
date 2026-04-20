@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NeuroMentor.Api.DTOs.Exercises;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using NeuroMentor.Api.Data;
 using NeuroMentor.Api.Services;
 
 namespace NeuroMentor.Api.Controllers;
@@ -11,10 +13,32 @@ namespace NeuroMentor.Api.Controllers;
 [ApiController]
 [Route("api/chat")]
 [Authorize]
-public class ChatController(ClaudeService claude) : ControllerBase
+public class ChatController(ClaudeService claude, AppDbContext db) : ControllerBase
 {
     private static readonly string MentorSystem = NeuroPersona.Mentor;
     private bool HasAiAccess => User.FindFirstValue("isAiEnabled") == "True";
+
+    private async Task<string> BuildContext(ChatRequest req)
+    {
+        // Prefer module chunk (focused, small) over raw context (large)
+        if (req.ModuleId.HasValue)
+        {
+            var module = await db.LessonModules.FindAsync(req.ModuleId.Value);
+            if (module is not null)
+            {
+                var ctx = $"MÓDULO: {module.Title}\nRESUMO: {module.Summary}\nCONCEITOS: {string.Join(", ", module.Concepts)}";
+                if (!string.IsNullOrWhiteSpace(module.TextChunk))
+                    ctx += $"\n\nTRECHO DO MATERIAL:\n{module.TextChunk}";
+                return ctx;
+            }
+        }
+
+        // Fallback: use raw context truncated
+        if (req.Context is not null)
+            return req.Context[..Math.Min(8000, req.Context.Length)];
+
+        return "";
+    }
 
     [HttpPost("stream")]
     public async Task Stream([FromBody] ChatRequest req, CancellationToken ct)
@@ -24,8 +48,9 @@ public class ChatController(ClaudeService claude) : ControllerBase
         Response.Headers["Cache-Control"] = "no-cache";
         Response.Headers["X-Accel-Buffering"] = "no";
 
-        var system = req.Context is not null
-            ? $"{MentorSystem}\n\nMATERIAL DO ALUNO:\n\"\"\"\n{req.Context[..Math.Min(15000, req.Context.Length)]}\n\"\"\""
+        var ctx = await BuildContext(req);
+        var system = ctx.Length > 0
+            ? $"{MentorSystem}\n\n<material>\n{ctx}\n</material>"
             : MentorSystem;
 
         var messages = req.Messages
@@ -45,8 +70,9 @@ public class ChatController(ClaudeService claude) : ControllerBase
     public async Task<IActionResult> GenerateExercises([FromBody] ChatRequest req)
     {
         if (!HasAiAccess) return Forbid();
-        var system = req.Context is not null
-            ? $"{MentorSystem}\n\nMATERIAL:\n{req.Context[..Math.Min(15000, req.Context.Length)]}"
+        var ctx = await BuildContext(req);
+        var system = ctx.Length > 0
+            ? $"{MentorSystem}\n\n<material>\n{ctx}\n</material>"
             : MentorSystem;
 
         var lastMsg = req.Messages.LastOrDefault();

@@ -3,6 +3,7 @@ import { useRef, useState, useCallback } from "react";
 import { Send, Paperclip, Zap, X, FileText, Image as ImageIcon, Loader2, BookOpen } from "lucide-react";
 import { StudentLayout } from "@/views/student/StudentLayout";
 import { useProgressStore } from "@/stores/progress";
+import { useLessonStore } from "@/stores/lesson";
 import { api, BACKEND_URL } from "@/lib/api";
 
 interface Attachment {
@@ -98,6 +99,8 @@ function ExerciseCard({ ex, onAnswer }: { ex: Exercise; onAnswer: (q: string, a:
 
 export function StudentChat() {
   const addAttempt = useProgressStore((s) => s.addAttempt);
+  const currentLesson = useLessonStore((s) => s.currentLesson);
+  const activeModuleId = currentLesson?.modules.find((m) => m.status === "approved")?.id ?? null;
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -212,7 +215,7 @@ export function StudentChat() {
           "Content-Type": "application/json",
           ...(chatToken ? { Authorization: `Bearer ${chatToken}` } : {}),
         },
-        body: JSON.stringify({ messages: chatMessages, context }),
+        body: JSON.stringify({ messages: chatMessages, context: context || null, moduleId: activeModuleId }),
       });
 
       if (!res.ok) throw new Error("Erro na resposta");
@@ -265,7 +268,8 @@ export function StudentChat() {
         },
         body: JSON.stringify({
           messages: [{ role: "user", content: `Gere 3 exercícios sobre ${contextName || "o material estudado"}.` }],
-          context,
+          context: context || null,
+          moduleId: activeModuleId,
         }),
       });
       const data = await exRes.json();

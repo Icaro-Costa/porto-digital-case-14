@@ -96,14 +96,19 @@ public class LessonsController(AppDbContext db, ClaudeService claude, TextExtrac
             var concepts = m.GetProperty("concepts").EnumerateArray()
                 .Select(c => c.GetString() ?? "").ToList();
 
+            var title = m.GetProperty("title").GetString() ?? "";
+            var summary = m.GetProperty("summary").GetString() ?? "";
+            var chunk = TextExtractionService.ExtractChunk(lesson.RawText, title, concepts);
+
             newModules.Add(new LessonModule
             {
                 LessonId = lesson.Id,
-                Title = m.GetProperty("title").GetString() ?? "",
-                Summary = m.GetProperty("summary").GetString() ?? "",
+                Title = title,
+                Summary = summary,
                 Concepts = concepts,
                 MatchScore = m.GetProperty("match").GetDouble(),
                 Order = order++,
+                TextChunk = chunk,
             });
         }
 

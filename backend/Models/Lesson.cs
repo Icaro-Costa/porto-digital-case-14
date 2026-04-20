@@ -26,6 +26,7 @@ public class LessonModule
     public double MatchScore { get; set; }
     public ModuleStatus Status { get; set; } = ModuleStatus.Pending;
     public int Order { get; set; }
+    public string TextChunk { get; set; } = "";
 
     public Guid LessonId { get; set; }
     public Lesson Lesson { get; set; } = null!;

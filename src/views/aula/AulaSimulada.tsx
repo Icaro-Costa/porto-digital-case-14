@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send, Sparkles, BookOpen, ArrowRight, Loader } from "lucide-react";
 import { useChatStore } from "@/stores/chat";
+import { useLessonStore } from "@/stores/lesson";
 import { BACKEND_URL } from "@/lib/api";
 
 interface Props {
@@ -13,6 +14,8 @@ interface Props {
 export function AulaSimulada({ lessonId, moduleTitle = "Introdução" }: Props) {
   const router = useRouter();
   const { messages, addMessage, appendToMessage, setStreaming, streaming, reset } = useChatStore();
+  const currentLesson = useLessonStore((s) => s.currentLesson);
+  const moduleId = currentLesson?.modules.find((m) => m.title === moduleTitle)?.id ?? null;
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +48,7 @@ export function AulaSimulada({ lessonId, moduleTitle = "Introdução" }: Props) 
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ messages: history, context: null }),
+        body: JSON.stringify({ messages: history, context: null, moduleId }),
       });
       if (!res.ok || !res.body) throw new Error("Falha no chat");
 
