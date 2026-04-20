@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState, useRef } from "react";
 import {
   Upload, Cpu, ListChecks, FileText, LogOut, BookOpen,
-  MoreVertical, Users, ChevronDown, ClipboardCheck, Menu, X,
+  MoreVertical, Users, ChevronDown, ClipboardCheck, Menu, X, ShieldCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
 import { useLessonStore } from "@/stores/lesson";
@@ -97,6 +97,19 @@ export function LessonBuilderLayout({ children }: { children: ReactNode }) {
           );
         })}
 
+        {user.isAdmin && (
+          <>
+            <div className="h-px my-3" style={{ background: "var(--nm-border)" }} />
+            <p className="text-xs font-semibold px-3 mb-2 tracking-wider" style={{ color: "var(--nm-text-muted)" }}>ADMIN</p>
+            <Link href="/admin/usuarios"
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors"
+              style={{ background: pathname === "/admin/usuarios" ? "rgba(234,179,8,0.15)" : "transparent", color: pathname === "/admin/usuarios" ? "#eab308" : "var(--nm-text-muted)" }}
+            >
+              <ShieldCheck size={16} /> Gerenciar usuários
+            </Link>
+          </>
+        )}
+
         <div className="h-px my-3" style={{ background: "var(--nm-border)" }} />
         <p className="text-xs font-semibold px-3 mb-2 tracking-wider" style={{ color: "var(--nm-text-muted)" }}>TURMAS</p>
         <Link href="/turmas"
@@ -133,7 +146,7 @@ export function LessonBuilderLayout({ children }: { children: ReactNode }) {
         </Link>
         <Link href="/perfil" className="flex-1 min-w-0 hover:opacity-80 transition-opacity">
           <p className="text-xs font-medium text-white truncate">{userName}</p>
-          <p className="text-xs" style={{ color: "var(--nm-purple-light)" }}>Professor</p>
+          <p className="text-xs" style={{ color: "var(--nm-purple-light)" }}>{user.isAdmin ? "ADM" : "Professor"}</p>
         </Link>
         <button onClick={handleLogout} style={{ color: "var(--nm-text-muted)" }} title="Sair">
           <LogOut size={14} />
@@ -188,7 +201,7 @@ export function LessonBuilderLayout({ children }: { children: ReactNode }) {
         <header className="hidden md:flex items-center justify-between px-6 py-3 flex-shrink-0"
           style={{ borderBottom: "1px solid var(--nm-border)" }}>
           <nav className="flex items-center gap-2 text-sm" style={{ color: "var(--nm-text-muted)" }}>
-            <span>Professor</span>
+            <span>{user.isAdmin ? "ADM" : "Professor"}</span>
             <span>/</span>
             {currentLesson && <><span className="truncate max-w-xs">{currentLesson.title}</span><span>/</span></>}
             <span className="text-white font-medium">{currentItem?.label ?? "Visão geral"}</span>

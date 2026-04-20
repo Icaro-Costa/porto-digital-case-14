@@ -113,7 +113,7 @@ export function ProfileModal({ onClose }: Props) {
             <div className="text-center">
               <p className="text-sm font-semibold text-white">{user.name}</p>
               <p className="text-xs" style={{ color: "var(--nm-purple-light)" }}>
-                {user.role === "student" ? "Aluno" : "Professor"}
+                {user.role === "student" ? "Aluno" : user.isAdmin ? "ADM" : "Professor"}
               </p>
             </div>
           </div>

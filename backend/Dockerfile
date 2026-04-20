@@ -4,6 +4,7 @@ COPY . .
 RUN dotnet publish NeuroMentor.Api.csproj -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/out .
 EXPOSE 8080

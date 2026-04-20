@@ -130,7 +130,7 @@ function ProfileContent() {
         </div>
         <p className="text-lg font-bold text-white">{name || user.name}</p>
         <p className="text-xs" style={{ color: "var(--nm-purple-light)" }}>
-          {isStudent ? "Aluno" : "Professor"}
+          {isStudent ? "Aluno" : user.isAdmin ? "ADM" : "Professor"}
         </p>
       </div>
 
