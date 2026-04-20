@@ -262,10 +262,29 @@ export const api = {
     );
   },
 
-  setAdminRole(userId: string, enabled: boolean) {
-    return request<{ id: string; isAdmin: boolean }>(
-      `/api/admin/users/${userId}/admin`,
-      { method: "PUT", body: JSON.stringify({ enabled }) }
+  createAdminUser(data: { name: string; email: string; password: string }) {
+    return request<{ id: string; name: string; email: string }>(
+      "/api/admin/users",
+      { method: "POST", body: JSON.stringify(data) }
+    );
+  },
+
+  deleteUser(userId: string) {
+    return request<{ deleted: string }>(`/api/admin/users/${userId}`, { method: "DELETE" });
+  },
+
+  getAdminLessons() {
+    return request<Array<{
+      id: string; title: string; sourceFileName: string; createdAt: string;
+      teacherName: string; teacherEmail: string; moduleCount: number;
+      rawTextSize: number; hasRawText: boolean;
+    }>>("/api/admin/lessons");
+  },
+
+  clearLessonRawText(lessonId: string) {
+    return request<{ id: string; cleared: boolean }>(
+      `/api/admin/lessons/${lessonId}/raw-text`,
+      { method: "DELETE" }
     );
   },
 
