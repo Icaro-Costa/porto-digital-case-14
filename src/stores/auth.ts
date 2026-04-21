@@ -122,15 +122,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (s) => ({ user: s.user, token: s.token }),
       merge: (persisted: unknown, current) => {
         const p = persisted as typeof current;
-        return {
-          ...current,
-          ...p,
-          user: p.user ? {
-            isAiEnabled: false,
-            isAdmin: false,
-            ...p.user,
-          } : null,
-        };
+        return { ...current, ...p };
       },
     }
   )
