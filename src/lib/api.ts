@@ -85,6 +85,10 @@ export interface AuthResponse {
 
 export const api = {
   // ── Auth ────────────────────────────────────────────────────────────────
+  me() {
+    return request<AuthResponse>("/api/auth/me");
+  },
+
   login(email: string, password: string) {
     return request<AuthResponse>("/api/auth/login", {
       method: "POST",

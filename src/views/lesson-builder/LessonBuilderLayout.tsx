@@ -22,6 +22,7 @@ export function LessonBuilderLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
   const currentLesson = useLessonStore((s) => s.currentLesson);
   const lessons = useLessonStore((s) => s.lessons);
   const setCurrent = useLessonStore((s) => s.setCurrent);
@@ -33,8 +34,9 @@ export function LessonBuilderLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
     if (user.role === "student") { router.replace("/dashboard"); return; }
+    refreshUser();
     loadTeacherLessons();
-  }, [user, router, loadTeacherLessons]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close sidebar on route change
   useEffect(() => { setOpen(false); }, [pathname]);

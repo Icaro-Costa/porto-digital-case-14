@@ -44,6 +44,7 @@ interface AuthState {
     role: Role;
   }) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   updateProfile: (
     fields: Partial<Pick<User, "name" | "photo" | "matricula" | "subject">>
   ) => Promise<{ ok: boolean; error?: string }>;
@@ -86,6 +87,15 @@ export const useAuthStore = create<AuthState>()(
         },
 
         logout: () => set({ user: null, token: null }),
+
+        refreshUser: async () => {
+          try {
+            const res = await api.me();
+            set({ token: res.token, user: mapAuthResponse(res) });
+          } catch {
+            // token expired or invalid — will be handled by 401 handler
+          }
+        },
 
         updateProfile: async (fields) => {
           try {
