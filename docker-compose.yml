@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: neuromentor
+      POSTGRES_USER: neuromentor
+      POSTGRES_PASSWORD: neuromentor123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neuromentor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=neuromentor;Username=neuromentor;Password=neuromentor123"
+      Jwt__Key: "NEUROMENTOR_JWT_SECRET_KEY_32CHARS_MIN"
+      Jwt__Issuer: neuromentor-api
+      Jwt__Audience: neuromentor-frontend
+      Anthropic__ApiKey: ${ANTHROPIC_API_KEY}
+      AllowedOrigins__0: http://localhost:3000
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+        NEXT_PUBLIC_BACKEND_URL: http://localhost:8080
+        NEXT_PUBLIC_APP_NAME: NeuroMentor
+        NEXT_PUBLIC_WHATSAPP_PHONE: "5581999999999"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
